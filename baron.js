@@ -1,3 +1,4 @@
+/* https://github.com/Diokuz/baron */
 !function(undefined) {
     "use strict";
 
@@ -13,10 +14,6 @@
 
         return out;
     };
-
-    baron.reinit = function() {
-        //as
-    }
 
     // gData - user defined data, not changed during baron work
     // Constructor!
@@ -268,7 +265,7 @@
         event(document, 'mousedown', function(e) { // document, not window, for ie8
             scrollerY0 = e.clientY - barTop;
         });
-        
+
         event(document, 'mousemove', function(e) { // document, not window, for ie8
             if (drag) {
                 scroller.scrollTop = topToRel(e.clientY - scrollerY0) * (container.offsetHeight - scroller.clientHeight);
