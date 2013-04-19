@@ -356,7 +356,7 @@
                 });
 
                 event(document, 'mousemove touchmove', function(e) { // document, not window, for ie8
-                    $('#dima').text('document touchmove, ');
+                    $('#dima').text('document touchstart, ');
                     console.log('document touchmove');
                     e.preventDefault();
                     if (drag) {
