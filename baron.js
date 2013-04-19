@@ -352,7 +352,7 @@
                     if (e.button != 2) { // Not RM
                         scrollerPos0 = e['client' + dir.x] - barPos;
                     }
-                    $('#dima').text('document touchstart ' + e.pageXOffset + '-' + e.button);
+                    $('#dima').text('document touchstart ' + e.pageX + e.clientX + (e.touches[0]||{}).pageX + '-' + e.button);
                 });
 
                 event(document, 'mousemove touchmove', function(e) { // document, not window, for ie8
