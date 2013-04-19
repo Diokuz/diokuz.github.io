@@ -352,7 +352,7 @@
                     if (e.button != 2) { // Not RM
                         scrollerPos0 = e['client' + dir.x] - barPos;
                     }
-                    $('#dima').text('document touchstart ' + e.args);
+                    $('#dima').text('document touchstart ' + e.touches + e.originalEvent.touches);
                 });
 
                 event(document, 'mousemove touchmove', function(e) { // document, not window, for ie8
@@ -361,7 +361,7 @@
                     if (drag) {
                         scroller[dir.scroll] = posToRel(e['client' + dir.x] - scrollerPos0) * (scroller[dir.scrollSize] - scroller[dir.client]);
                     }
-                    $('#dima').text('document touchstart ' + e.args);
+                    $('#dima').text('document touchmove ' + e.touches + e.originalEvent.touches);
                 });
 
                 event(window, 'resize', resize);
