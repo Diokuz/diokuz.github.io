@@ -334,7 +334,7 @@
                 // Events initialization
                 event(scroller, 'scroll', uBar);
 
-                event(bar, 'mousedown touchstart', function(e) { // Bar drag
+                event(bar, 'touchstart mousedown', function(e) { // Bar drag
                     $('#dima').text('bar touchstart, ');
                     e.preventDefault(); // Text selection disabling in Opera... and all other browsers?
                     selection(); // Disable text selection in ie8
@@ -348,7 +348,7 @@
                 });
 
                 // Starting drag when mouse key (LM) goes down at bar
-                event(document, 'mousedown touchstart', function(e) { // document, not window, for ie8
+                event(document, 'touchstart mousedown', function(e) { // document, not window, for ie8
                     $('#dima').text('document touchend, ');
                     if (e.button != 2) { // Not RM
                         scrollerPos0 = e['client' + dir.x] - barPos;
