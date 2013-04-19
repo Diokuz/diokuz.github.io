@@ -349,14 +349,14 @@
 
                 // Starting drag when mouse key (LM) goes down at bar
                 event(document, 'touchstart mousedown', function(e) { // document, not window, for ie8
-                    $('#dima').text('document touchend, ');
+                    $('#dima').text('document touchstart, ');
                     if (e.button != 2) { // Not RM
                         scrollerPos0 = e['client' + dir.x] - barPos;
                     }
                 });
 
                 event(document, 'mousemove touchmove', function(e) { // document, not window, for ie8
-                    $('#dima').text('document touchstart, ');
+                    $('#dima').text('document touchmove, ');
                     console.log('document touchmove');
                     e.preventDefault();
                     if (drag) {
