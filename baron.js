@@ -349,17 +349,20 @@
 
                 // Starting drag when mouse key (LM) goes down at bar
                 event(document, 'touchstart mousedown', function(e) { // document, not window, for ie8
+                    var x = e['client' + dir.x] || e.originalEvent.touches[0].pageX;
                     if (e.button != 2) { // Not RM
-                        scrollerPos0 = e['client' + dir.x] - barPos;
+                        scrollerPos0 = x - barPos;
                     }
+
                     $('#dima').text('document touchstart ' + e.originalEvent.touches[0].pageX);
                 });
 
                 event(document, 'mousemove touchmove', function(e) { // document, not window, for ie8
                     $('#dima').text('document touchmove, ');
                     e.preventDefault();
+                    var x = e['client' + dir.x] || e.originalEvent.touches[0].pageX;
                     if (drag) {
-                        scroller[dir.scroll] = posToRel(e['client' + dir.x] - scrollerPos0) * (scroller[dir.scrollSize] - scroller[dir.client]);
+                        scroller[dir.scroll] = posToRel(x - scrollerPos0) * (scroller[dir.scrollSize] - scroller[dir.client]);
                     }
                     $('#dima').text('document touchmove ' + e.originalEvent.touches[0].pageX);
                 });
