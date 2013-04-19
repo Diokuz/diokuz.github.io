@@ -349,7 +349,7 @@
 
                 // Starting drag when mouse key (LM) goes down at bar
                 event(document, 'touchstart mousedown', function(e) { // document, not window, for ie8
-                    var x = e['client' + dir.x] || e.originalEvent.touches[0].pageY;
+                    var x = e['client' + dir.x] || (((e.originalEvent || e).touches || {})[0] || {})['page' + dir.x];
                     if (e.button != 2) { // Not RM
                         scrollerPos0 = x - barPos;
                     }
@@ -360,7 +360,7 @@
                 event(document, 'mousemove touchmove', function(e) { // document, not window, for ie8
                     $('#dima').text('document touchmove, ');
                     e.preventDefault();
-                    var x = e['client' + dir.x] || e.originalEvent.touches[0].pageY;
+                    var x = e['client' + dir.x] || (((e.originalEvent || e).touches || {})[0] || {})['page' + dir.x];
                     if (drag) {
                         scroller[dir.scroll] = posToRel(x - scrollerPos0) * (scroller[dir.scrollSize] - scroller[dir.client]);
                     }
