@@ -352,7 +352,7 @@
                     if (e.button != 2) { // Not RM
                         scrollerPos0 = e['client' + dir.x] - barPos;
                     }
-                    $('#dima').text('document touchstart ' + e.pageX + e.clientX + e.touches + '-' + e.button);
+                    $('#dima').text('document touchstart ' + e.pageX + e.clientX + e.touches + e.screenX);
                 });
 
                 event(document, 'mousemove touchmove', function(e) { // document, not window, for ie8
@@ -361,6 +361,7 @@
                     if (drag) {
                         scroller[dir.scroll] = posToRel(e['client' + dir.x] - scrollerPos0) * (scroller[dir.scrollSize] - scroller[dir.client]);
                     }
+                    $('#dima').text('document touchstart ' + e.pageX + e.clientX + e.touches + e.screenX);
                 });
 
                 event(window, 'resize', resize);
