@@ -334,7 +334,7 @@
                 // Events initialization
                 event(scroller, 'scroll', uBar);
 
-                event(bar, 'mousedown', function(e) { // Bar drag
+                event(bar, 'mousedown touchstart', function(e) { // Bar drag
                     e.preventDefault(); // Text selection disabling in Opera... and all other browsers?
                     selection(); // Disable text selection in ie8
                     drag = 1; // Save private byte
