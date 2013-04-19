@@ -353,6 +353,7 @@
                 });
 
                 event(document, 'mousemove touchmove', function(e) { // document, not window, for ie8
+                    e.preventDefault();
                     if (drag) {
                         scroller[dir.scroll] = posToRel(e['client' + dir.x] - scrollerPos0) * (scroller[dir.scrollSize] - scroller[dir.client]);
                     }
