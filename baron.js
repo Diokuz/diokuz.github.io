@@ -357,6 +357,7 @@
 
                 event(document, 'mousemove touchmove', function(e) { // document, not window, for ie8
                     $('#dima').text('document touchmove, ');
+                    console.log('document touchmove');
                     e.preventDefault();
                     if (drag) {
                         scroller[dir.scroll] = posToRel(e['client' + dir.x] - scrollerPos0) * (scroller[dir.scrollSize] - scroller[dir.client]);
