@@ -340,19 +340,19 @@
                     drag = 1; // Save private byte
                 });
 
-                event(document, 'mouseup blur', function() { // Cancelling drag when mouse key goes up and when window loose its focus
+                event(document, 'mouseup blur touchend', function() { // Cancelling drag when mouse key goes up and when window loose its focus
                     selection(1); // Enable text selection
                     drag = 0;
                 });
 
                 // Starting drag when mouse key (LM) goes down at bar
-                event(document, 'mousedown', function(e) { // document, not window, for ie8
+                event(document, 'mousedown touchstart', function(e) { // document, not window, for ie8
                     if (e.button != 2) { // Not RM
                         scrollerPos0 = e['client' + dir.x] - barPos;
                     }
                 });
 
-                event(document, 'mousemove', function(e) { // document, not window, for ie8
+                event(document, 'mousemove touchmove', function(e) { // document, not window, for ie8
                     if (drag) {
                         scroller[dir.scroll] = posToRel(e['client' + dir.x] - scrollerPos0) * (scroller[dir.scrollSize] - scroller[dir.client]);
                     }
