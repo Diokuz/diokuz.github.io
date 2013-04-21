@@ -152,6 +152,11 @@
                     return (t - barTopLimit) / k();
                 }
 
+                // Cursor position in main direction in px // Now with iOs support
+                function getCursorPos(e) {
+                    return e['client' + dir.x] || (((e.originalEvent || e).touches || {})[0] || {})['page' + dir.x];
+                }
+
                 // Text selection pos preventing
                 function dontPosSelect() {
                     return false;
@@ -159,7 +164,7 @@
 
                 // Text selection preventing on drag
                 function selection(enable) {
-                    event(document, 'selectpos', dontPosSelect, enable ? 'off' : 'on');
+                    event(document, 'selectpos selectstart', dontPosSelect, enable ? 'off' : 'on');
                 }
 
                 // Bubbling wheel event e to scroller (from headers and scrollbar)
@@ -204,10 +209,6 @@
                     headers = selector(gData.header, scroller);
                     if (headers) {
                         for (i = 0 ; i < headers.length ; i++) {
-                            if (!(i == 0 && gData.trackSmartLim) && force) {
-                                event(headers[i], 'mousewheel', bubbleWheel, 'off');
-                                event(headers[i], 'mousewheel', bubbleWheel);
-                            }
                             // Summary headers height above current
                             topHeights[i] = (topHeights[i - 1] || 0);
 
@@ -227,6 +228,11 @@
                             viewPortSize -= headers[i][dir.offset];
 
                             headerTops[i] = headers[i].parentNode[dir.offsetPos]; // No paddings for parentNode
+
+                            if ( !(i == 0 && headerTops[i] == 0) && force) {
+                                event(headers[i], 'mousewheel', bubbleWheel, 'off');
+                                event(headers[i], 'mousewheel', bubbleWheel);
+                            }
                         }
 
                         if (gData.trackSmartLim) { // Bottom edge of first header as top limit for track
@@ -308,12 +314,18 @@
                 this._uBar = uBar;
 
                 // DOM initialization
-                if (gData.bar) {
-                    bar = selector(gData.bar, scroller)[0];
-                } else {
-                    bar = selector('*', scroller);
-                    bar = bar[bar.length - 1];
+                if (gData.bar && gData.bar[0].nodeType) {
+                    bar = gData.bar[0];
                 }
+                if (!bar) {
+                    if (gData.bar) {
+                        bar = selector(gData.bar, scroller)[0];
+                    } else {
+                        bar = selector('*', scroller);
+                        bar = bar[bar.length - 1];
+                    }
+                }
+
                 if (bar) {
                     track = selector(gData.track, scroller)[0];
                     track = track || bar.parentNode;
@@ -335,51 +347,41 @@
                 event(scroller, 'scroll', uBar);
 
                 event(bar, 'touchstart mousedown', function(e) { // Bar drag
-                    $('#dima').text('bar touchstart, ');
                     e.preventDefault(); // Text selection disabling in Opera... and all other browsers?
                     selection(); // Disable text selection in ie8
                     drag = 1; // Save private byte
                 });
 
                 event(document, 'mouseup blur touchend', function() { // Cancelling drag when mouse key goes up and when window loose its focus
-                    $('#dima').text('document touchend, ');
                     selection(1); // Enable text selection
                     drag = 0;
                 });
 
                 // Starting drag when mouse key (LM) goes down at bar
                 event(document, 'touchstart mousedown', function(e) { // document, not window, for ie8
-                    var x = e['client' + dir.x] || (((e.originalEvent || e).touches || {})[0] || {})['page' + dir.x];
                     if (e.button != 2) { // Not RM
-                        scrollerPos0 = x - barPos;
+                        scrollerPos0 = getCursorPos(e) - barPos;
                     }
-
-                    $('#dima').text('document touchstart ' + e.originalEvent.touches[0].pageY);
                 });
 
-                event(document, 'mousemove touchmove', function(e) { // document, not window, for ie8
-                    $('#dima').text('document touchmove, ');
-                    e.preventDefault();
-                    var x = e['client' + dir.x] || (((e.originalEvent || e).touches || {})[0] || {})['page' + dir.x];
+                event(document, 'mousemove', function(e) { // document, not window, for ie8
                     if (drag) {
-                        scroller[dir.scroll] = posToRel(x - scrollerPos0) * (scroller[dir.scrollSize] - scroller[dir.client]);
+                        scroller[dir.scroll] = posToRel(getCursorPos(e) - scrollerPos0) * (scroller[dir.scrollSize] - scroller[dir.client]);
                     }
-                    $('#dima').text('document touchmove ' + e.originalEvent.touches[0].pageY);
                 });
 
                 event(window, 'resize', resize);
                 event(scroller, 'sizeChange', resize); // Custon event for alternate baron update mechanism
 
                 event(bar, 'mousewheel', bubbleWheel);
-                if (track && track != scroller) {
-                    event(track, 'mousewheel', bubbleWheel);
-                }
+                // if (track && track != scroller) {
+                //     event(track, 'mousewheel', bubbleWheel);
+                // }
 
                 // Reinit when resize
                 function resize() {
-                    // Если новый ресайз произошёл быстро - отменяем предыдущий таймаут
+                    // Limit the resize frenquency
                     clearTimeout(rTimer);
-                    // И навешиваем новый
                     rTimer = setTimeout(function() {
                         uView();
                         uBar();
@@ -429,13 +431,9 @@
             }
         };
 
-        try {
-            scrollGroup = new constructor(params);
-            scrollGroup.u();
-            scrolls.push(scrollGroup);
-        } catch (e) {
-            debugger;
-        };
+        scrollGroup = new constructor(params);
+        scrollGroup.u();
+        scrolls.push(scrollGroup);
 
         return scrollGroup;
     };
@@ -450,10 +448,10 @@
     baron.noConflict = function() {
         window.baron = stored; // Restoring original value of "baron" global var
 
-        return baron; // Returning baron
+        return baron;
     };
 
-    baron.version = '0.4.x';
+    baron.version = '0.5.1';
 
     if ($ && $.fn) { // Adding baron to jQuery as plugin
         $.fn.baron = baron;
