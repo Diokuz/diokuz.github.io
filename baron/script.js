@@ -1,6 +1,7 @@
 window.onload = function() {
     window.dima = baron({
-        scroller: '.wrapper_1 .scroller',
+        root: '.wrapper_1',
+        scroller: '.scroller',
         bar: '.scroller__bar',
         barOnCls: 'baron'
     }).fix({
@@ -15,7 +16,7 @@ window.onload = function() {
             property: 'width'
         }],
         limit: 115,
-        callback: function() {
+        onExpand: function() {
             $('.load').css('background', 'red');
         }
     });
