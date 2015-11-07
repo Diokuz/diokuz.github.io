@@ -6,8 +6,7 @@
 
     <script src="../js/jquery-1.9.0.js"></script>
 
-    <script src="baron.full.js"></script>
-    <script src="../src/pull.js"></script>
+    <script src="baron.js"></script>
     <script src="script.js"></script>
 
     <link rel="stylesheet" type="text/css" href="../baron.css" />
@@ -19,7 +18,7 @@
 
 <body>
 
-    <div class="wrapper wrapper_1">
+    <div class="clipper clipper_1">
         <div class="scroller">
             <div class="container">
                 <div class="header">
@@ -68,22 +67,29 @@
                 </div>
             </div>
         </div>
-        <div class="scroller__bar-wrapper">
+        <div class="scroller__track">
             <div class="scroller__bar"></div>
         </div>
     </div>
 
-    <div class="wrapper wrapper_2">
+    <div class="clipper clipper_2">
         <div class="scroller">
+            <p class="text">Note: CSS height must be set for horizontal scroller.
             <p class="text">Baron is a title of nobility. In the kingdom of England, the medieval Latin word baro, baronis was used originally to denote a tenant-in-chief of the early Norman kings who held his lands by the feudal tenure of "barony" (in Latin per baroniam), and who was entitled to attend the Great Council which by the 13th century had developed into the Parliament of England.
             <p class="text">The title was quite common in most European countries often in a slightly modified form. In Italian, the word used was Barone. The corresponding title in the Holy Roman Empire was Freiherr.
             <div class="header">
                 <h1 class="header__title">Sticky footer</h1>
             </div>
-            <div class="scroller__bar"></div>
-            <div class="scroller__bar scroller__bar_h"></div>
+            <div class="scroller__track _v">
+                <div class="scroller__bar _v"></div>
+            </div>
+            <div class="scroller__track _h">
+                <div class="scroller__bar _h"></div>
+            </div>
         </div>
     </div>
+
+    <button class="toggler">Click me</button>
 
 </body>
 

@@ -1,6 +1,6 @@
 window.onload = function() {
     window.dima = baron({
-        root: '.wrapper_1',
+        root: '.clipper_1',
         scroller: '.scroller',
         bar: '.scroller__bar',
         barOnCls: 'baron'
@@ -23,8 +23,8 @@ window.onload = function() {
     });
 
     baron({
-        scroller: '.wrapper_2 .scroller',
-        bar: '.scroller__bar',
+        scroller: '.clipper_2 .scroller',
+        bar: '.scroller__bar._v',
         barOnCls: 'baron'
     }).fix({
         elements: '.header__title',
@@ -33,6 +33,22 @@ window.onload = function() {
         after: 'header__title_position_bottom'
     }).baron({
         barOnCls: 'baron_h',
-        bar: '.scroller__bar_h'
+        bar: '.scroller__bar._h'
     });
+
+    var toggle = false;
+    $('.toggler').on('click', function() {
+        toggle = !toggle;
+    });
+
+    var i = 0;
+    var scroller2 = $('.clipper_2 .scroller');
+    setInterval(function() {
+        if (toggle) {
+            var height = 140 + Math.sin(i / 10) * 60;
+            scroller2.css('height', height);
+            $(window).trigger('resize');
+            i++;
+        }
+    }, 50);
 };
