@@ -1,8 +1,9 @@
-(function(window, $, undefined) {
+(function(window, undefined) {
     'use strict';
 
     if (!window) return; // Server side
 
+    var $ = window.$;
     var _baron = baron; // Stored baron value for noConflict usage
     var pos = ['left', 'top', 'right', 'bottom', 'width', 'height'];
     // Global store for all baron instances (to be able to dispose them on html-nodes)
@@ -10,23 +11,67 @@
     var origin = {
         v: { // Vertical
             x: 'Y', pos: pos[1], oppos: pos[3], crossPos: pos[0], crossOpPos: pos[2],
-            size: pos[5], crossSize: pos[4],
+            size: pos[5],
+            crossSize: pos[4], crossMinSize: 'min-' + pos[4], crossMaxSize: 'max-' + pos[4],
             client: 'clientHeight', crossClient: 'clientWidth',
-            crossScroll: 'scrollWidth',
+            scrollEdge: 'scrollLeft',
             offset: 'offsetHeight', crossOffset: 'offsetWidth', offsetPos: 'offsetTop',
             scroll: 'scrollTop', scrollSize: 'scrollHeight'
         },
         h: { // Horizontal
             x: 'X', pos: pos[0], oppos: pos[2], crossPos: pos[1], crossOpPos: pos[3],
-            size: pos[4], crossSize: pos[5],
+            size: pos[4],
+            crossSize: pos[5], crossMinSize: 'min-' + pos[5], crossMaxSize: 'max-' + pos[5],
             client: 'clientWidth', crossClient: 'clientHeight',
-            crossScroll: 'scrollHeight',
+            scrollEdge: 'scrollTop',
             offset: 'offsetWidth', crossOffset: 'offsetHeight', offsetPos: 'offsetLeft',
             scroll: 'scrollLeft', scrollSize: 'scrollWidth'
         }
     };
 
-    function each(obj, iterator) {
+    // window.baron and jQuery.fn.baron points to this function
+    function baron(params) {
+        var jQueryMode;
+        var roots;
+        var empty = !params;
+        var defaultParams = {
+            $: window.jQuery,
+            direction: 'v',
+            barOnCls: 'baron',
+            resizeDebounce: 0,
+            event: function(elem, event, func, mode) {
+                params.$(elem)[mode || 'on'](event, func);
+            },
+            cssGuru: false
+        };
+
+        params = params || {};
+
+        // Extending default params by user-defined params
+        for (var key in defaultParams) {
+            if (params[key] === undefined) {
+                params[key] = defaultParams[key];
+            }
+        };
+
+        jQueryMode = this instanceof params.$;  // this - global context or jQuery instance
+
+        if (jQueryMode) {
+            params.root = roots = this;
+        } else {
+            roots = params.$(params.root || params.scroller);
+        }
+
+        var instance = new baron.fn.constructor(roots, params, empty);
+
+        if (instance.autoUpdate && !empty) {
+            instance.autoUpdate();
+        }
+
+        return instance;
+    }
+
+    function arrayEach(obj, iterator) {
         var i = 0;
 
         if (obj.length === undefined || obj === window) obj = [obj];
@@ -37,30 +82,6 @@
         }
     }
 
-    function baron(params) {
-        var jQueryMode,
-            roots,
-            $;
-
-        params = params || {};
-        $ = params.$ || $ || window.jQuery;
-        jQueryMode = this instanceof $;  // this - window or jQuery instance
-
-        if (jQueryMode) {
-            params.root = roots = this;
-        } else {
-            roots = $(params.root || params.scroller);
-        }
-
-        var instance = new baron.fn.constructor(roots, params, $);
-
-        if (instance.autoUpdate) {
-            instance.autoUpdate();
-        }
-
-        return instance;
-    }
-
     // shortcut for getTime
     function getTime() {
         return new Date().getTime();
@@ -69,33 +90,41 @@
     baron._instances = instances; // for debug
 
     baron.fn = {
-        constructor: function(roots, input, $) {
-            var params = validate(input);
+        constructor: function(roots, totalParams, noUserParams) {
+            var params = clone(totalParams);
 
-            params.$ = $;
+            // Intrinsic params.event is not the same as totalParams.event
+            params.event = function(elems, e, func, mode) {
+                arrayEach(elems, function(elem) {
+                    totalParams.event(elem, e, func, mode);
+                });
+            };
+
             this.length = 0;
-            each.call(this, roots, function(root, i) {
-                var id = +manageAttr(root, params.direction); // Could be NaN
+
+            arrayEach.call(this, roots, function(root, i) {
+                var attr = manageAttr(root, params.direction);
+                var id = +attr; // Could be NaN
 
                 // baron() without params can return existing instances,
                 // but baron(params) will throw an Error as a second initialization
-                if (id == id && instances[id] && !input) {
+                if (id == id && attr != undefined && instances[id] && noUserParams) {
                     this[i] = instances[id];
                 } else {
-                    var localParams = clone(params);
+                    var perInstanceParams = clone(params);
 
                     // root and scroller can be different nodes
                     if (params.root && params.scroller) {
-                        localParams.scroller = params.$(params.scroller, root);
-                        if (!localParams.scroller.length) {
-                            localParams.scroller = root;
+                        perInstanceParams.scroller = params.$(params.scroller, root);
+                        if (!perInstanceParams.scroller.length) {
+                            perInstanceParams.scroller = root;
                         }
                     } else {
-                        localParams.scroller = root;
+                        perInstanceParams.scroller = root;
                     }
 
-                    localParams.root = root;
-                    this[i] = init(localParams);
+                    perInstanceParams.root = root;
+                    this[i] = init(perInstanceParams);
                 }
 
                 this.length = i + 1;
@@ -107,7 +136,7 @@
         dispose: function() {
             var params = this.params;
 
-            each(this, function(item) {
+            arrayEach(this, function(item) {
                 item.dispose(params);
             });
 
@@ -127,7 +156,7 @@
             params.root = [];
             params.scroller = this.params.scroller;
 
-            each.call(this, this, function(elem) {
+            arrayEach.call(this, this, function(elem) {
                 params.root.push(elem.root);
             });
             params.direction = (this.params.direction == 'v') ? 'h' : 'v';
@@ -234,10 +263,19 @@
                 },
 
                 type: 'sizeChange'
+            }, {
+                // Clipper onScroll bug https://github.com/Diokuz/baron/issues/116
+                element: item.clipper,
+
+                handler: function() {
+                    item.clipperOnScroll();
+                },
+
+                type: 'scroll'
             }
         ];
 
-        each(item._eventHandlers, function(event) {
+        arrayEach(item._eventHandlers, function(event) {
             if (event.element) {
                 eventManager(event.element, event.type, event.handler, mode);
             }
@@ -260,6 +298,7 @@
     }
 
     // set, remove or read baron-specific id-attribute
+    // @returns {String|undefined} - id node value, or undefined, if there is no attr
     function manageAttr(node, direction, mode, id) {
         var attrName = 'data-baron-' + direction + '-id';
 
@@ -287,6 +326,11 @@
 
         out.update();
 
+        out.scrollEdge = 0;
+        if (params.rtl) {
+            out.scrollEdge = out.clipper[out.origin.scrollEdge]; // initial position
+        }
+
         return out;
     }
 
@@ -307,15 +351,9 @@
     function validate(input) {
         var output = clone(input);
 
-        output.direction = output.direction || 'v';
-
-        var event = input.event || function(elem, event, func, mode) {
-            output.$(elem)[mode || 'on'](event, func);
-        };
-
         output.event = function(elems, e, func, mode) {
-            each(elems, function(elem) {
-                event(elem, e, func, mode);
+            arrayEach(elems, function(elem) {
+                input.event(elem, e, func, mode);
             });
         };
 
@@ -337,6 +375,7 @@
 
     item.prototype = {
         // underscore.js realization
+        // used in autoUpdate plugin
         _debounce: function(func, wait) {
             var self = this,
                 timeout,
@@ -383,9 +422,7 @@
                 scrollerPos0,
                 track,
                 resizePauseTimer,
-                scrollPauseTimer,
                 scrollingTimer,
-                pause,
                 scrollLastFire,
                 resizeLastFire,
                 oldBarSize;
@@ -416,8 +453,9 @@
             this.barOnCls = params.barOnCls || '_baron';
             this.scrollingCls = params.scrollingCls;
             this.draggingCls = params.draggingCls;
+            this.impact = params.impact;
             this.barTopLimit = 0;
-            pause = params.pause * 1000 || 0;
+            this.resizeDebounce = params.resizeDebounce;
 
             // Updating height or width of bar
             function setBarSize(size) {
@@ -530,43 +568,57 @@
             };
 
             // onResize & DOM modified handler
+            // also fires on init
             this.resize = function() {
-                var self = this,
-                    delay = 0;
+                var self = this;
+                var minPeriod = (self.resizeDebounce === undefined) ? 300 : self.resizeDebounce;
+                var delay = 0;
 
-                if (getTime() - resizeLastFire < pause) {
+                if (getTime() - resizeLastFire < minPeriod) {
                     clearTimeout(resizePauseTimer);
-                    delay = pause;
+                    delay = minPeriod;
                 }
 
                 function upd() {
-                    var client,
-                        offset,
-                        was,
-                        will;
+                    var was;
+                    var will;
+                    var offset = self.scroller[self.origin.crossOffset];
+                    var client = self.scroller[self.origin.crossClient];
 
-                    offset = self.scroller[self.origin.crossOffset];
+                    // Opera 12 bug https://github.com/Diokuz/baron/issues/105
+                    if (client > 0 && offset === 0) {
+                        // Only Opera 12 in some rare nested flexbox cases goes here
+                        // Sorry guys for magic,
+                        // but I dont want to create temporary html-nodes set
+                        // just for measuring scrollbar size in Opera 12.
+                        // 17px for Windows XP-8.1, 15px for Mac (really rare).
+                        offset = client + 17;
+                    }
 
                     if (offset) { // if there is no size, css should not be set
                         self.barOn();
                         client = self.scroller[self.origin.crossClient];
 
-                        // Two different appropches for different directions
-                        if (self.direction == 'v') { // vertical
+                        // Two different appropches
+                        var fixScroller = self.impact ?
+                            (self.impact == 'scroller') :
+                            (self.direction == 'v');
+
+                        if (fixScroller) { // scroller
                             var delta = offset - client;
 
                             was = $(self.clipper).css(self.origin.crossSize);
                             will = self.clipper[self.origin.crossClient] + delta + 'px';
 
                             if (was != will) {
-                                $(self.scroller).css(self.origin.crossSize, will);
+                                self._setCrossSizes(self.scroller, will);
                             }
-                        } else { // horizontal
+                        } else { // clipper
                             was = $(self.clipper).css(self.origin.crossSize);
-                            will = self.scroller[self.origin.crossClient] + 'px';
+                            will = client + 'px';
 
                             if (was != will) {
-                                $(self.clipper).css(self.origin.crossSize, will);
+                                self._setCrossSizes(self.clipper, will);
                             }
                         }
                     }
@@ -611,41 +663,75 @@
 
             // onScroll handler
             this.scroll = function() {
-                var delay = 0,
-                    self = this;
+                var self = this;
 
-                if (getTime() - scrollLastFire < pause) {
-                    clearTimeout(scrollPauseTimer);
-                    delay = pause;
-                }
-
-                if (delay) {
-                    scrollPauseTimer = setTimeout(function() {
-                        self.updatePositions();
-                    }, delay);
-                } else {
-                    self.updatePositions();
-                }
+                self.updatePositions();
 
                 if (self.scrollingCls) {
                     if (!scrollingTimer) {
-                        this.$(this.scroller).addClass(this.scrollingCls);
+                        self.$(self.root).addClass(self.scrollingCls);
                     }
                     clearTimeout(scrollingTimer);
                     scrollingTimer = setTimeout(function() {
-                        self.$(self.scroller).removeClass(self.scrollingCls);
+                        self.$(self.root).removeClass(self.scrollingCls);
                         scrollingTimer = undefined;
                     }, 300);
                 }
 
             };
 
+            // https://github.com/Diokuz/baron/issues/116
+            this.clipperOnScroll = function() {
+                if (this.direction == 'h') return;
+
+                // clipper.scrollLeft = initial scroll position (0 for ltr, 17 for rtl)
+                this.clipper[this.origin.scrollEdge] = this.scrollEdge;
+            };
+
+            // Flexbox `align-items: stretch` (default) requires to set min-width for vertical
+            // and max-height for horizontal scroll. Just set them all.
+            // http://www.w3.org/TR/css-flexbox-1/#valdef-align-items-stretch
+            this._setCrossSizes = function(node, size) {
+                var css = {};
+
+                css[this.origin.crossSize] = size;
+                css[this.origin.crossMinSize] = size;
+                css[this.origin.crossMaxSize] = size;
+
+                this.$(node).css(css);
+            };
+
+            // Set most common css rules
+            this._dumbCss = function(on) {
+                if (params.cssGuru) return;
+
+                var overflow = on ? 'hidden' : null;
+                var msOverflowStyle = on ? 'none' : null;
+
+                this.$(this.clipper).css({
+                    overflow: overflow,
+                    msOverflowStyle: msOverflowStyle
+                });
+
+                var scroll = on ? 'scroll' : null;
+                var axis = this.direction == 'v' ? 'y' : 'x';
+                var scrollerCss = {};
+
+                scrollerCss['overflow-' + axis] = scroll;
+                scrollerCss['box-sizing'] = 'border-box';
+                scrollerCss.margin = '0';
+                scrollerCss.border = '0';
+                this.$(this.scroller).css(scrollerCss);
+            };
+
             return this;
         },
 
+        // fires on any update and on init
         update: function(params) {
             fire.call(this, 'upd', params); // Update all plugins' params
 
+            this._dumbCss(true);
             this.resize(1);
             this.updatePositions();
 
@@ -656,7 +742,12 @@
         dispose: function(params) {
             manageEvents(this, this.event, 'off');
             manageAttr(this.root, params.direction, 'off');
-            this.$(this.scroller).css(this.origin.crossSize, '');
+            if (params.direction == 'v') {
+                this._setCrossSizes(this.scroller, '');
+            } else {
+                this._setCrossSizes(this.clipper, '');
+            }
+            this._dumbCss(false);
             this.barOn(true);
             fire.call(this, 'dispose');
             this._disposed = true;
@@ -689,17 +780,17 @@
         return baron;
     };
 
-    baron.version = '0.7.10';
+    baron.version = '1.2.0';
 
     if ($ && $.fn) { // Adding baron to jQuery as plugin
         $.fn.baron = baron;
     }
 
     window.baron = baron; // Use noConflict method if you need window.baron var for another purposes
-    if (window['module'] && module.exports) {
+    if (typeof module != 'undefined') {
         module.exports = baron.noConflict();
     }
-})(window, window.$);
+})(window);
 
 /* Fixable elements plugin for baron 0.6+ */
 (function(window, undefined) {
@@ -1038,9 +1129,9 @@
                 element: forward,
 
                 handler: function() {
-                    var y = self.pos() - params.delta || 30;
+                    // var y = self.pos() - params.delta || 30;
 
-                    self.pos(y);
+                    // self.pos(y);
                 },
 
                 type: 'click'
@@ -1057,7 +1148,10 @@
                 element: backward,
 
                 handler: function() {
-                    var y = self.pos() + params.delta || 30;
+                    // debugger
+                    var y = self.pos() + (params.delta || 30);
+                    console.log('self.pos()', self.pos());
+                    console.log('y', y);
 
                     self.pos(y);
                 },

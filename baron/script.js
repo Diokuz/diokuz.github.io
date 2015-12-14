@@ -1,54 +1,27 @@
 window.onload = function() {
     window.dima = baron({
-        root: '.clipper_1',
+        root: '.clipper',
         scroller: '.scroller',
         bar: '.scroller__bar',
-        barOnCls: 'baron'
+        barOnCls: 'baron',
+        scrollingCls: '_scrolling',
+        draggingCls: '_dragging'
     }).fix({
         elements: '.header__title',
         outside: 'header__title_state_fixed',
         before: 'header__title_position_top',
         after: 'header__title_position_bottom',
         clickable: true
-    }).pull({
-        block: '.load',
-        elements: [{
-            self: '.load__value',
-            property: 'width'
-        }],
-        limit: 115,
-        onExpand: function() {
-            $('.load').css('background', 'red');
-        }
-    });
+    }).controls({
+        // Element to be used as interactive track. Note: it could be different from 'track' param of baron.
+        track: '.scroller__track',
 
-    baron({
-        scroller: '.clipper_2 .scroller',
-        bar: '.scroller__bar._v',
-        barOnCls: 'baron'
-    }).fix({
-        elements: '.header__title',
-        outside: 'header__title_state_fixed',
-        before: 'header__title_position_top',
-        after: 'header__title_position_bottom'
-    }).baron({
-        barOnCls: 'baron_h',
-        bar: '.scroller__bar._h'
-    });
+        // Element to be used as 'down' / 'right' button
+        forward: '.scroller__up',
 
-    var toggle = false;
-    $('.toggler').on('click', function() {
-        toggle = !toggle;
-    });
+        // Element to be used as 'up' / 'left' button
+        backward: '.scroller__down',
 
-    var i = 0;
-    var scroller2 = $('.clipper_2 .scroller');
-    setInterval(function() {
-        if (toggle) {
-            var height = 140 + Math.sin(i / 10) * 60;
-            scroller2.css('height', height);
-            $(window).trigger('resize');
-            i++;
-        }
-    }, 50);
+        delta: 30
+    });
 };
