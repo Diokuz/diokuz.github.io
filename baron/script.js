@@ -1,9 +1,19 @@
 window.onload = function() {
-    window.dima = baron({
-        root: '.clipper',
-        scroller: '.scroller',
-        bar: '.scroller__bar',
-        barOnCls: 'baron',
+    // Horizontal
+    baron({
+        root: '.main__clipper',
+        scroller: '.main__scroller',
+        bar: '.main__bar',
+        scrollingCls: '_scrolling',
+        draggingCls: '_dragging',
+        direction: 'h',
+        impact: 'scroller'
+    });
+
+    baron({
+        root: '.baron',
+        scroller: '.baron__scroller',
+        bar: '.baron__bar',
         scrollingCls: '_scrolling',
         draggingCls: '_dragging'
     }).fix({
@@ -14,14 +24,8 @@ window.onload = function() {
         clickable: true
     }).controls({
         // Element to be used as interactive track. Note: it could be different from 'track' param of baron.
-        track: '.scroller__track',
-
-        // Element to be used as 'down' / 'right' button
-        forward: '.scroller__up',
-
-        // Element to be used as 'up' / 'left' button
-        backward: '.scroller__down',
-
-        delta: 30
+        track: '.baron__track',
+        forward: '.baron__down',
+        backward: '.baron__up'
     });
 };

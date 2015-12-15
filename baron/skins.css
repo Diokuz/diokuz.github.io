@@ -1,5 +1,49 @@
-/* ONE */
-.clipper_1 .scroller__track {
+/* BASE */
+.baron__clipper {
+    position: relative;
+    overflow: hidden;
+}
+.baron__scroller {
+    overflow-y: scroll;
+    -ms-overflow-style: none;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    margin: 0;
+    border: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    -webkit-overflow-scrolling: touch;
+    /* remove line to customize scrollbar in iOs */
+}
+.baron__scroller::-webkit-scrollbar {
+    width: 0;
+}
+.baron__track {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+}
+.baron__free {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+}
+.baron__bar {
+    position: absolute;
+    right: 0;    
+    z-index: 1;
+    width: 10px;
+    background: #999;
+}
+.baron__control {
+    display: none;
+}
+
+/* SIMPLE */
+.baron._simple .baron__track {
     opacity: 0;
     position: absolute;
     z-index: 3;
@@ -12,10 +56,10 @@
     background: rgba(0, 0, 255, .1);
     pointer-events: none;
     }
-.clipper_1.baron .scroller__track {
+.baron._simple.baron .baron__track {
     opacity: 1;
     }
-    .clipper_1 .scroller__bar {
+    .baron._simple .baron__bar {
         position: absolute;
         z-index: 1;
         width: 8px;
@@ -26,15 +70,15 @@
         transition: opacity .2s linear;
         pointer-events: auto;
         }
-    .clipper_1 .scroller__bar:hover {
+    .baron._simple .baron__bar:hover {
         opacity: .8;
         }
-    .clipper_1.baron .scroller__bar {
+    .baron._simple.baron .baron__bar {
         opacity: .6;
         }
 
-/* TWO */
-.clipper_2 .scroller__track {
+/* Mac OS X */
+.baron._macosx .baron__track {
     opacity: 0;
     position: absolute;
     z-index: 3;
@@ -43,10 +87,10 @@
     right: 2px;
     width: 0;
     }
-.clipper_2.baron .scroller__track {
+.baron._macosx._scrollbar .baron__track {
     opacity: 1;
     }
-    .clipper_2 .scroller__bar {
+    .baron._macosx .baron__bar {
         position: absolute;
         z-index: 1;
         width: 6px;
@@ -56,21 +100,21 @@
         transition: .1s opacity .4s linear;
         pointer-events: auto;
         }
-    .scroller__bar._dragging {
+    .baron__bar._dragging {
         /*opacity: 1;*/
         }
-    .clipper_2 .scroller__bar:hover,
-    ._scrolling .scroller__bar {
+    .baron._macosx .baron__bar:hover,
+    .baron._scrolling .baron__bar {
         transition-duration: 0s;
         transition-delay: 0s;
         opacity: .5;
         }
 
-/* THREE */
-.clipper_3 .scroller {
+/* Windows XP */
+.baron._winxp .baron__scroller {
     padding-right: 17px;
     }
-.clipper_3 .scroller__track {
+.baron._winxp .baron__track {
     opacity: 0;
     position: absolute;
     z-index: 3;
@@ -81,41 +125,58 @@
     overflow: hidden;
     background-image: linear-gradient(to right, #f2f1ec, #fdfef9);
     border: 1px solid #ecede5;
-    /*box-shadow:
-            0 0 1px #adb3bf,
-            0 0 3px #000 inset;*/
     }
-.clipper_3.baron .scroller__track {
+.baron._winxp._scrollbar .baron__track {
     opacity: 1;
     }
-    .clipper_3 .scroller__up,
-    .clipper_3 .scroller__down {
-        position: absolute;
-        z-index: 1;
-        width: 15px;
-        height: 15px;
-        box-sizing: border-box;
+    .baron._winxp .baron__control {
+        display: block;
+    }
+    .baron._winxp .baron__control,
+    .baron._winxp .baron__bar {
         border: 1px solid #f3ffff;
         box-shadow:
             1px 1px 1px #b7caf5 inset,
             1px 1px 1px #7b9fd3;
         border-radius: 3px;
         background-image: linear-gradient(to right, #c9d7fc, #baccf4);
+        text-align: center;
+        font-size: 8px;
+        line-height: 14px;
+        color: #4e6287;
+        cursor: default;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
         }
-    .clipper_3 .scroller__up {
+    .baron._winxp .baron__control:hover,
+    .baron._winxp .baron__bar:hover {
+        background-image: linear-gradient(to right, #d9e7ff, #cadcff);
+    }
+    .baron._winxp .baron__up,
+    .baron._winxp .baron__down {
+        position: absolute;
+        z-index: 1;
+        width: 15px;
+        height: 16px;
+        box-sizing: border-box;
+        }
+    .baron._winxp .baron__up {
         top: 0;
         }
-    .clipper_3 .scroller__down {
+    .baron._winxp .baron__down {
         bottom: 0;
         }
-    .clipper_3 .scroller__free {
+    .baron._winxp .baron__free {
         position: absolute;
-        top: 17px;
-        bottom: 17px;
+        top: 18px;
+        bottom: 18px;
         right: 0;
         width: 0;
         }
-    .clipper_3 .scroller__bar {
+    .baron._winxp .baron__bar {
         position: absolute;
         z-index: 1;
         width: 15px;
@@ -131,7 +192,7 @@
         transition: opacity .2s ease-in;
         pointer-events: auto;
         }
-        .clipper_3 .scroller__bar:before {
+        .baron._winxp .baron__bar:before {
             content: '';
             position: absolute;
             top: 45%;
@@ -151,7 +212,7 @@
                     rgba(255, 255, 255, 0) 7px, rgba(255, 255, 255, 0) 8px
                 );
             }
-        .clipper_3 .scroller__bar:after {
+        .baron._winxp .baron__bar:after {
             content: '';
             position: absolute;
             top: 47%;
@@ -170,7 +231,51 @@
                     rgba(138, 175, 246, 0) 7px, rgba(138, 175, 246, 0) 8px
                 );
             }
-    .clipper_3 .scroller__bar._dragging,
-    .clipper_3 .scroller__bar:hover {
+    .baron._winxp .baron__bar._dragging,
+    .baron._winxp .baron__bar:hover {
         background-image: linear-gradient(to right, #d9e7ff, #cadcff);
+        }
+
+/* Ubuntu */
+.baron._ubuntu12 .baron__scroller {
+    padding-right: 14px;
+    }
+.baron._ubuntu12 .baron__track {
+    opacity: 0;
+    position: absolute;
+    z-index: 3;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 14px;
+    box-sizing: border-box;
+    border: 1px solid #c5c1bd;
+    border-radius: 7px;
+    background-image: linear-gradient(to right, #d3d3d3, #e5e5e5);
+    }
+.baron._ubuntu12._scrollbar .baron__track {
+    opacity: 1;
+    }
+    .baron._ubuntu12 .baron__bar {
+        position: absolute;
+        z-index: 1;
+        width: 12px;
+        box-sizing: border-box;
+        border: 1px solid #fff;
+        border-radius: 6px;
+        background-image: linear-gradient(to right, #fcfbfb, #eeeceb);
+        opacity: 1;
+        pointer-events: auto;
+        box-shadow: 0 0 1px #d6d3d0;
+        }
+    .baron._ubuntu12 .baron__bar:hover,
+    .baron._ubuntu12 .baron__bar._dragging {
+        background-image: linear-gradient(to right, #e96d3a, #f58050);
+        border-color: #e1632f;
+        }
+    .baron__bar._dragging {
+        /*opacity: 1;*/
+        }
+    .baron._ubuntu12 .baron__bar:hover,
+    ._scrolling .baron__bar {
         }

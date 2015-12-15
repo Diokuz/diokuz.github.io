@@ -37,7 +37,7 @@
         var defaultParams = {
             $: window.jQuery,
             direction: 'v',
-            barOnCls: 'baron',
+            barOnCls: '_scrollbar',
             resizeDebounce: 0,
             event: function(elem, event, func, mode) {
                 params.$(elem)[mode || 'on'](event, func);
@@ -780,7 +780,7 @@
         return baron;
     };
 
-    baron.version = '1.2.0';
+    baron.version = '1.2.1';
 
     if ($ && $.fn) { // Adding baron to jQuery as plugin
         $.fn.baron = baron;
@@ -1129,9 +1129,9 @@
                 element: forward,
 
                 handler: function() {
-                    // var y = self.pos() - params.delta || 30;
+                    var y = self.pos() + (params.delta || 30);
 
-                    // self.pos(y);
+                    self.pos(y);
                 },
 
                 type: 'click'
@@ -1148,10 +1148,7 @@
                 element: backward,
 
                 handler: function() {
-                    // debugger
-                    var y = self.pos() + (params.delta || 30);
-                    console.log('self.pos()', self.pos());
-                    console.log('y', y);
+                    var y = self.pos() - (params.delta || 30);
 
                     self.pos(y);
                 },
@@ -1175,6 +1172,9 @@
                     element: track,
 
                     handler: function(e) {
+                        // https://github.com/Diokuz/baron/issues/121
+                        if (e.target != track) return;
+
                         var x = e['offset' + self.origin.x],
                             xBar = self.bar[self.origin.offsetPos],
                             sign = 0;
