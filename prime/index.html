@@ -1,0 +1,138 @@
+<!doctype html>
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Prime numbers</title>
+	<style type="text/css">
+		html, body {
+			padding: 0;
+			margin: 0;
+			height: 100%;
+			width: 100%;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-family: Helvetica, Arial;
+			font-size: 6px;
+		}
+
+		.field {
+			display: flex;
+			flex-direction: row;
+			width: 100%;
+			height: 80%;
+			background: #ddd;
+		}
+
+		.column {
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-end;
+		}
+
+		.cell {
+			margin: 0;
+			background: #eee;
+			/*border-radius: 2px;*/
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 10px;
+			height: 20px;
+			transition: all .3s linear;
+			cursor: default;
+		}
+
+		.cell:hover {
+			transform: scale(2);
+		}
+
+		.num {
+			margin: 10px 0 0;
+			background: #fcc;
+			border-radius: 2px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 10px;
+			height: 30px;
+			text-orientation: upright;
+			writing-mode: vertical-lr;
+		}
+	</style>
+</head>
+<body>
+	<div class="field" id="root">
+	</div>
+
+	<script type="text/javascript">
+		const field = document.querySelector('#root')
+		const arr = []
+		const cap = Math.floor(field.clientWidth / 10) - 1
+
+		function getColor(arg) {
+			switch (arg) {
+				case 0:
+					return '#eee'
+				case 1:
+					return '#f59'
+				case 2:
+					return '#ff0'
+				case 3:
+					return '#0ff'
+			}
+			let x = (arg / cap) * 1000 + 1
+			let red = 255 - Math.round(Math.log(x) / Math.log(1000) * 255)
+			let green = 255
+			let blue = Math.round(Math.log(x) / Math.log(1000) * 255)
+
+			return `rgba(${red}, ${green}, ${blue}, 1)`
+		}
+
+		for (let i = 0; i < cap; i++) {
+			arr.push([i]) // [[0], [1], [2], ...]
+			const col = document.createElement('div')
+
+			col.className = 'column'
+			col.innerHTML = `<div class="num">${i}</div>`
+
+			field.appendChild(col)
+		}
+
+		let i = 1
+		let num = 1
+
+		function next() {
+			arr[i].push(num)
+			const col = field.querySelectorAll('div.column')[i]
+			const cellHtml = arr[i].slice(1).reduce((acc, n, j) => {
+				const colorIndex = Math.round(Math.log(j + 3) / Math.log(cap) * 255)
+				const color = getColor(j)
+				acc = `<div class="cell" style="background: ${color}" title="${n}">${n}</div>` + acc
+
+				return acc
+			}, '')
+			const html = `
+				${cellHtml}
+				<div class="num">${i}</div>
+			`
+
+			col.innerHTML = html
+
+			i += num
+
+			if (i >= cap) {
+				num++
+				i = num
+			}
+
+			if (num < cap) {
+				setTimeout(next, 10)
+			}
+		}
+
+		next()
+	</script>
+</body>
+</html>
